@@ -1,0 +1,203 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{max-width:460px;margin:0 auto;padding:2rem 1.25rem;font-family:var(--font-sans)}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.stop-pill{display:inline-flex;align-items:center;gap:6px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:999px;padding:5px 14px;font-size:13px;color:var(--color-text-secondary)}
+.egg-pip{width:14px;height:17px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#BA7517;display:inline-block}
+.section{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem;background:var(--color-background-primary)}
+.section-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:.6rem;font-weight:500}
+.section-title{font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:.25rem;line-height:1.25}
+.section-body{font-size:15px;color:var(--color-text-secondary);line-height:1.65}
+.task-card{background:var(--color-background-secondary)}
+.clue-card{border-left:3px solid #BA7517;border-radius:0 var(--border-radius-lg) var(--border-radius-lg) 0}
+.clue-text{font-family:var(--font-serif);font-size:16px;color:var(--color-text-primary);line-height:1.7;font-style:italic}
+.dots{display:flex;gap:7px;justify-content:center;margin:1.5rem 0 .5rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--color-border-tertiary);transition:background .2s}
+.dot.done{background:#BA7517;opacity:.4}
+.dot.active{background:#BA7517;opacity:1}
+.final-banner{text-align:center;padding:2rem 1rem}
+.final-banner .big{font-size:48px;line-height:1}
+.final-banner h2{font-size:22px;font-weight:500;color:var(--color-text-primary);margin:.75rem 0 .5rem}
+.final-banner p{font-size:15px;color:var(--color-text-secondary);line-height:1.6}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+.qr-cell{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;text-align:center;background:var(--color-background-primary)}
+.qr-cell .qr-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.25rem}
+.qr-cell .qr-sub{font-size:11px;color:var(--color-text-tertiary);margin-bottom:.75rem}
+.qr-box{display:flex;justify-content:center}
+.admin-note{font-size:12px;color:var(--color-text-tertiary);text-align:center;margin-top:1rem;line-height:1.5}
+.btn-admin{display:inline-block;margin-top:1.5rem;padding:8px 16px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-secondary);cursor:pointer;background:transparent;text-decoration:none}
+.btn-admin:hover{background:var(--color-background-secondary)}
+</style>
+
+<div id="app"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const stops = [
+  {
+    id:'start',
+    pill:'The dungeon',
+    label:'Your adventure begins',
+    task:null,
+    clue:'A luminary of science stands immortalised nearby — his name synonymous with the invisible forces that power our world. Find the familiar face who keeps watch in his shadow.',
+    dotIndex:0,
+    total:6
+  },
+  {
+    id:'stop1',
+    pill:'Stop 1 of 5',
+    label:'You found him',
+    task:'Find the familiar face standing near. Ask him what his title is — and what the magic number is. Write it down.',
+    clue:'When five o\'clock strikes on a Friday, there\'s a spot on campus where colleagues trade their desks for something cold and golden. Find where they like to sit outside.',
+    dotIndex:1,
+    total:6
+  },
+  {
+    id:'stop2',
+    pill:'Stop 2 of 5',
+    label:'Cheers to Friday',
+    task:'Take a photo on the benches, pretending you\'re enjoying a well-earned pint on a Friday evening. How many benches are there?',
+    clue:'To mark a significant birthday, the University commissioned an artwork that divided opinion — something bold and soft, bought at a cost not everyone thought wise. Find the cushioned controversy.',
+    dotIndex:2,
+    total:6
+  },
+  {
+    id:'stop3',
+    pill:'Stop 3 of 5',
+    label:'Something soft and divisive',
+    task:'Find the sticky note hidden on the sculpture. Counting from the bottom — which pillow is it on? That\'s your number.',
+    clue:'A Cheshire village lends its name to a campus haunt beloved by the caffeine-dependent. Your hunt master is a regular — she knows the menu well.',
+    dotIndex:3,
+    total:6
+  },
+  {
+    id:'stop4',
+    pill:'Stop 4 of 5',
+    label:'Time for a treat',
+    task:'Head inside and order an Orangina and a brownie. How much does it cost you in total? That\'s your number.',
+    clue:'Millions of years of Earth\'s story are gathered behind one set of doors — fossils, minerals, ancient creatures on display. Entry is free for some, but not for all.',
+    dotIndex:4,
+    total:6
+  },
+  {
+    id:'stop5',
+    pill:'Stop 5 of 5',
+    label:'Step into history',
+    task:'Take a photo as if you\'re one of the exhibits — strike your best fossilised pose. If you were a member of the public, how much would it cost to enter? That\'s your final number.',
+    clue:'Your journey is nearly over. Return to the building where it all began. Climb to the third floor — room 310 is waiting. Bring every number you\'ve collected.',
+    dotIndex:5,
+    total:6
+  }
+];
+
+function dots(active, total) {
+  let html = '<div class="dots">';
+  for (let i=0;i<total;i++) {
+    let cls = i < active ? 'done' : i === active ? 'active' : '';
+    html += `<div class="dot ${cls}"></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderStop(s) {
+  return `
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="stop-pill"><span class="egg-pip"></span>${s.pill}</div>
+        <a class="btn-admin" href="#admin" style="margin:0;padding:5px 12px;font-size:12px">Print QR codes</a>
+      </div>
+      <div class="section task-card">
+        <div class="section-label">Your task here</div>
+        ${s.task ? `<div class="section-body">${s.task}</div>` : `<div class="section-body" style="color:var(--color-text-primary);font-size:16px">Welcome to the Easter egg hunt! Follow the clue below to find your first stop.</div>`}
+      </div>
+      <div class="section clue-card">
+        <div class="section-label">Next clue</div>
+        <div class="clue-text">${s.clue}</div>
+      </div>
+      ${dots(s.dotIndex, s.total)}
+    </div>`;
+}
+
+function renderFinal() {
+  return `
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="stop-pill"><span class="egg-pip"></span>Final stop</div>
+        <a class="btn-admin" href="#admin" style="margin:0;padding:5px 12px;font-size:12px">Print QR codes</a>
+      </div>
+      <div class="final-banner">
+        <div class="big">🥚</div>
+        <h2>You made it!</h2>
+        <p>Head to <strong>room 310</strong> in the Watson Building.<br>Add up all the numbers from your five stops and tell the hunt master the total.<br><br><em>Good luck!</em></p>
+      </div>
+      ${dots(6,6)}
+    </div>`;
+}
+
+function renderAdmin() {
+  const base = location.href.split('#')[0];
+  const pages = [
+    {title:'The dungeon', sub:'Starting QR code', hash:'start'},
+    {title:'Stop 1', sub:'Faraday statue', hash:'stop1'},
+    {title:'Stop 2', sub:'Staff House', hash:'stop2'},
+    {title:'Stop 3', sub:'Pillow sculpture', hash:'stop3'},
+    {title:'Stop 4', sub:'Bramhall', hash:'stop4'},
+    {title:'Stop 5', sub:'Lapworth Museum', hash:'stop5'},
+  ];
+  let cells = pages.map((p,i) => `
+    <div class="qr-cell">
+      <div class="qr-title">${p.title}</div>
+      <div class="qr-sub">${p.sub}</div>
+      <div class="qr-box" id="qr${i}"></div>
+    </div>`).join('');
+
+  return `
+    <div class="wrap" style="max-width:520px">
+      <div class="top-bar">
+        <div class="stop-pill"><span class="egg-pip"></span>Admin — print QR codes</div>
+        <a class="btn-admin" href="#start" style="margin:0;padding:5px 12px;font-size:12px">Back to hunt</a>
+      </div>
+      <div class="admin-grid">${cells}</div>
+      <p class="admin-note">Print this page and cut out each QR code. Place it at the corresponding location.<br>Each code links to the correct stop page.</p>
+    </div>`;
+}
+
+function generateQRs() {
+  const base = location.href.split('#')[0];
+  const pages = ['start','stop1','stop2','stop3','stop4','stop5'];
+  pages.forEach((hash, i) => {
+    const el = document.getElementById('qr'+i);
+    if (el && window.QRCode) {
+      try {
+        new QRCode(el, {
+          text: base + '#' + hash,
+          width: 110,
+          height: 110,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch(e) {}
+    }
+  });
+}
+
+function render() {
+  const hash = location.hash.replace('#','') || 'start';
+  const app = document.getElementById('app');
+  if (hash === 'admin') {
+    app.innerHTML = renderAdmin();
+    setTimeout(generateQRs, 100);
+  } else if (hash === 'final') {
+    app.innerHTML = renderFinal();
+  } else {
+    const s = stops.find(x => x.id === hash) || stops[0];
+    app.innerHTML = renderStop(s);
+  }
+}
+
+window.addEventListener('hashchange', render);
+render();
+</script>
